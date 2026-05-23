@@ -13,6 +13,7 @@ run(){
   lora_alpha=16
   lora_dropout=0.05
   target_modules="query value"
+  prediction_details_file="test_predictions_full.jsonl"
   wandb_project=project_name
   wandb_run_name=phobert-vietmed-ner-${mode}-r-${rank}-n-${l_num}-alpha-${lora_alpha}-seed-${seed}-bs-${batch_size}-lr-${learning_rate}-epochs-${num_train_epochs}
   exp_dir=./phobert-vietmed-ner/${wandb_run_name}
@@ -31,6 +32,7 @@ run(){
   --lora_dropout ${lora_dropout} \
   --lora_bias none \
   --target_modules ${target_modules} \
+  --prediction_details_file ${prediction_details_file} \
   --evaluation_strategy epoch \
   --save_strategy epoch \
   --load_best_model_at_end true \

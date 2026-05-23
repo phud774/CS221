@@ -3,6 +3,7 @@
 """Fine-tune and evaluate vinai/phobert-base on leduckhai/VietMed-NER."""
 
 import logging
+import json
 import os
 import sys
 from dataclasses import dataclass, field
@@ -61,6 +62,10 @@ class ModelArguments:
     wandb_project: str = field(default="", metadata={"help": "Weights & Biases project name."})
     wandb_watch: str = field(default="", metadata={"help": "Weights & Biases watch setting."})
     wandb_log_model: str = field(default="", metadata={"help": "Weights & Biases model logging setting."})
+    prediction_details_file: str = field(
+        default="test_predictions_full.jsonl",
+        metadata={"help": "JSONL file name for per-sample predictions with ground truth and original fields."},
+    )
     cache_dir: Optional[str] = field(default=None, metadata={"help": "Cache directory for models/datasets."})
 
 
@@ -152,6 +157,44 @@ def print_lora_parameters(model):
         f"{all_param:,d}",
         100 * trainable_params / all_param,
     )
+
+
+def align_predictions_to_words(sample, prediction, aligned_label_ids, label_list):
+    tokens = []
+    pred_index = 0
+    correct_count = 0
+
+    for word, ground_truth in zip(sample["words"], sample["labels"]):
+        while pred_index < len(aligned_label_ids) and aligned_label_ids[pred_index] == -100:
+            pred_index += 1
+        if pred_index >= len(aligned_label_ids):
+            tokens.append(
+                {
+                    "word": word,
+                    "ground_truth": normalize_label(ground_truth),
+                    "prediction": None,
+                    "correct": False,
+                    "truncated": True,
+                }
+            )
+            continue
+
+        gold_label = normalize_label(ground_truth)
+        predicted_label = label_list[prediction[pred_index]]
+        is_correct = predicted_label == gold_label
+        correct_count += int(is_correct)
+        tokens.append(
+            {
+                "word": word,
+                "ground_truth": gold_label,
+                "prediction": predicted_label,
+                "correct": is_correct,
+                "truncated": False,
+            }
+        )
+        pred_index += 1
+
+    return tokens, correct_count
 
 
 def main():
@@ -318,18 +361,34 @@ def main():
 
         predictions = np.argmax(predictions, axis=2)
         output_predictions_file = os.path.join(training_args.output_dir, "test_predictions.txt")
+        output_details_file = os.path.join(training_args.output_dir, model_args.prediction_details_file)
         if trainer.is_world_process_zero():
+            os.makedirs(training_args.output_dir, exist_ok=True)
             with open(output_predictions_file, "w", encoding="utf-8") as writer:
-                for words, prediction, label in zip(raw_datasets["test"]["words"], predictions, labels):
-                    pred_index = 0
-                    for word in words:
-                        while pred_index < len(label) and label[pred_index] == -100:
-                            pred_index += 1
-                        if pred_index >= len(label):
-                            break
-                        writer.write(f"{word}\t{label_list[prediction[pred_index]]}\n")
-                        pred_index += 1
+                for sample, prediction, label in zip(raw_datasets["test"], predictions, labels):
+                    tokens, _ = align_predictions_to_words(sample, prediction, label, label_list)
+                    for token in tokens:
+                        writer.write(
+                            f"{token['word']}\t{token['ground_truth']}\t{token['prediction']}\t{token['correct']}\n"
+                        )
                     writer.write("\n")
+
+            with open(output_details_file, "w", encoding="utf-8") as writer:
+                for index, (sample, prediction, label) in enumerate(zip(raw_datasets["test"], predictions, labels)):
+                    tokens, correct_count = align_predictions_to_words(sample, prediction, label, label_list)
+                    predicted_count = sum(not token["truncated"] for token in tokens)
+                    record = dict(sample)
+                    record.update(
+                        {
+                            "sample_index": index,
+                            "tokens": tokens,
+                            "num_tokens": len(tokens),
+                            "num_predicted_tokens": predicted_count,
+                            "num_correct_tokens": correct_count,
+                            "token_accuracy": correct_count / predicted_count if predicted_count else 0.0,
+                        }
+                    )
+                    writer.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
 if __name__ == "__main__":

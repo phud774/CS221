@@ -15,11 +15,11 @@ run(){
   target_modules="query value"
   prediction_details_file="test_predictions_full.jsonl"
   wandb_project=project_name
-  wandb_run_name=phobert-vietmed-ner-${mode}-r-${rank}-n-${l_num}-alpha-${lora_alpha}-seed-${seed}-bs-${batch_size}-lr-${learning_rate}-epochs-${num_train_epochs}
-  exp_dir=./phobert-vietmed-ner/${wandb_run_name}
+  wandb_run_name=phobertv2-vietmed-ner-${mode}-r-${rank}-n-${l_num}-alpha-${lora_alpha}-seed-${seed}-bs-${batch_size}-lr-${learning_rate}-epochs-${num_train_epochs}
+  exp_dir=./phobertv2-vietmed-ner/${wandb_run_name}
 
   python ./run_vietmed_ner_phobert.py \
-  --model_name_or_path vinai/phobert-base \
+  --model_name_or_path vinai/phobert-base-v2 \
   --dataset_name leduckhai/VietMed-NER \
   --output_dir ${exp_dir}/model \
   --do_train \

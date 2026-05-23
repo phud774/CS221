@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-"""Fine-tune and evaluate vinai/phobert-base on leduckhai/VietMed-NER."""
+"""Fine-tune and evaluate vinai/phobert-base-v2 on leduckhai/VietMed-NER."""
 
 import logging
 import json
@@ -31,8 +31,8 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ModelArguments:
     model_name_or_path: str = field(
-        default="vinai/phobert-base",
-        metadata={"help": "Model name or local path. Defaults to vinai/phobert-base."},
+        default="vinai/phobert-base-v2",
+        metadata={"help": "Model name or local path. Defaults to vinai/phobert-base-v2."},
     )
     dataset_name: str = field(
         default="leduckhai/VietMed-NER",

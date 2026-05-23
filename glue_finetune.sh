@@ -61,9 +61,9 @@ run(){
   --run_name ${wandb_run_name} \
   --overwrite_output_dir
 }
-task_base=('mnli' 'mrpc' 'qnli' 'qqp' 'rte' 'sst2' 'stsb' 'cola')
+task_base=('cola')
 
 for task in "${task_base[@]}"; do
-    # run $task "8" "1" "base"
-    run $task "8" "2" "me"
+    run $task "8" "1" "base"
+    # run $task "8" "2" "me"
 done

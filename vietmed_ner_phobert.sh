@@ -54,7 +54,7 @@ run(){
 }
 
 # LoRA baseline, same meaning as glue_finetune.sh's mode=base.
-# run "base" "8" "1"
+run "base" "8" "1"
 
 # MELoRA run, same style as glue_finetune.sh's mode=me.
-run "me" "8" "2"
+# run "me" "8" "2"

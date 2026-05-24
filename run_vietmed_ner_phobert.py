@@ -42,6 +42,10 @@ class ModelArguments:
         default=256,
         metadata={"help": "Maximum sequence length after PhoBERT subword tokenization."},
     )
+    max_train_samples: Optional[int] = field(
+        default=None,
+        metadata={"help": "Limit the number of training examples. Useful for quick runs."},
+    )
     label_all_tokens: bool = field(
         default=False,
         metadata={"help": "If true, label every subword. If false, only label the first subword of each word."},
@@ -231,6 +235,10 @@ def main():
     set_seed(training_args.seed)
 
     raw_datasets = load_dataset(model_args.dataset_name, cache_dir=model_args.cache_dir)
+    if model_args.max_train_samples is not None:
+        max_train_samples = min(len(raw_datasets["train"]), model_args.max_train_samples)
+        raw_datasets["train"] = raw_datasets["train"].select(range(max_train_samples))
+
     label_list = build_label_list(raw_datasets)
     label_to_id = {label: index for index, label in enumerate(label_list)}
     id_to_label = {index: label for label, index in label_to_id.items()}

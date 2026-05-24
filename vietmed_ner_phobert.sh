@@ -9,13 +9,14 @@ run(){
   seed=42
   learning_rate=1e-4
   num_train_epochs=40
+  max_train_samples=2000
   batch_size=64
   lora_alpha=16
   lora_dropout=0.05
   target_modules="query value"
   prediction_details_file="test_predictions_full.jsonl"
   wandb_project=project_name
-  wandb_run_name=phobert-base-vietmed-ner-${mode}-r-${rank}-n-${l_num}-alpha-${lora_alpha}-seed-${seed}-bs-${batch_size}-lr-${learning_rate}-epochs-${num_train_epochs}
+  wandb_run_name=phobert-base-vietmed-ner-${mode}-r-${rank}-n-${l_num}-alpha-${lora_alpha}-seed-${seed}-bs-${batch_size}-lr-${learning_rate}-epochs-${num_train_epochs}-train-${max_train_samples}
   exp_dir=./phobert-base-vietmed-ner/${wandb_run_name}
 
   python ./run_vietmed_ner_phobert.py \
@@ -39,6 +40,7 @@ run(){
   --metric_for_best_model f1 \
   --greater_is_better true \
   --max_seq_length 256 \
+  --max_train_samples ${max_train_samples} \
   --per_device_train_batch_size ${batch_size} \
   --per_device_eval_batch_size ${batch_size} \
   --learning_rate ${learning_rate} \

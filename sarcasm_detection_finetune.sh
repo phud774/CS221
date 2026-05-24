@@ -4,7 +4,7 @@ export WANDB_MODE=offline
 
 run(){
   learning_rate=4e-4
-  num_train_epochs=40
+  num_train_epochs=20
   per_device_train_batch_size=64
   rank=$1
   l_num=$2
@@ -15,10 +15,11 @@ run(){
   lora_dropout=0.05
   lora_bias=none
   max_seq_length=256
+  max_train_samples=5000
   validation_ratio=0.1
   test_ratio=0.1
   wandb_project=project_name
-  wandb_run_name=roberta-lora-${mode}-sarcasm-headlines-r-${rank}-n-${l_num}-alpha-${lora_alpha}-seed-${seed}-bs-${per_device_train_batch_size}-lr-${learning_rate}-epochs-${num_train_epochs}
+  wandb_run_name=roberta-lora-${mode}-sarcasm-headlines-r-${rank}-n-${l_num}-alpha-${lora_alpha}-seed-${seed}-bs-${per_device_train_batch_size}-lr-${learning_rate}-epochs-${num_train_epochs}-train-${max_train_samples}
 
   exp_dir=../roberta_sarcasm_reproduce/${wandb_run_name}
 
@@ -31,6 +32,7 @@ run(){
   --do_eval \
   --do_predict \
   --max_seq_length ${max_seq_length} \
+  --max_train_samples ${max_train_samples} \
   --validation_ratio ${validation_ratio} \
   --test_ratio ${test_ratio} \
   --per_device_train_batch_size ${per_device_train_batch_size} \

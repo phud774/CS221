@@ -3,8 +3,8 @@
 export WANDB_MODE=offline
 
 run(){
-  learning_rate=4e-4
-  num_train_epochs=20
+  learning_rate=1e-4
+  num_train_epochs=10
   per_device_train_batch_size=64
   rank=$1
   l_num=$2
@@ -15,7 +15,7 @@ run(){
   lora_dropout=0.05
   lora_bias=none
   max_seq_length=256
-  max_train_samples=5000
+  max_train_samples=1000
   validation_ratio=0.1
   test_ratio=0.1
   wandb_project=project_name

@@ -28,6 +28,16 @@ from transformers.trainer_utils import get_last_checkpoint
 
 logger = logging.getLogger(__name__)
 
+STUDENTS_FEEDBACK_PARQUET_FILES = {
+    "train": "https://huggingface.co/datasets/uitnlp/vietnamese_students_feedback/resolve/refs%2Fconvert%2Fparquet/default/train/0000.parquet",
+    "validation": "https://huggingface.co/datasets/uitnlp/vietnamese_students_feedback/resolve/refs%2Fconvert%2Fparquet/default/validation/0000.parquet",
+    "test": "https://huggingface.co/datasets/uitnlp/vietnamese_students_feedback/resolve/refs%2Fconvert%2Fparquet/default/test/0000.parquet",
+}
+STUDENTS_FEEDBACK_LABEL_NAMES = {
+    "sentiment": ["negative", "neutral", "positive"],
+    "topic": ["lecturer", "training_program", "facility", "others"],
+}
+
 
 @dataclass
 class ModelArguments:
@@ -77,6 +87,9 @@ class ModelArguments:
 
 
 def get_label_names(raw_datasets: DatasetDict, label_column_name: str) -> List[str]:
+    if label_column_name in STUDENTS_FEEDBACK_LABEL_NAMES:
+        return STUDENTS_FEEDBACK_LABEL_NAMES[label_column_name]
+
     label_feature = raw_datasets["train"].features[label_column_name]
     if isinstance(label_feature, ClassLabel):
         return list(label_feature.names)
@@ -84,6 +97,21 @@ def get_label_names(raw_datasets: DatasetDict, label_column_name: str) -> List[s
     labels = raw_datasets["train"].unique(label_column_name)
     labels.sort()
     return [str(label) for label in labels]
+
+
+def load_students_feedback_dataset(dataset_name: str, cache_dir: Optional[str]) -> DatasetDict:
+    try:
+        return load_dataset(dataset_name, cache_dir=cache_dir)
+    except RuntimeError as exc:
+        message = str(exc)
+        if dataset_name != "uitnlp/vietnamese_students_feedback" or "Dataset scripts are no longer supported" not in message:
+            raise
+
+        logger.warning(
+            "Falling back to Hugging Face auto-converted Parquet files because this datasets version no longer "
+            "supports loading dataset scripts."
+        )
+        return load_dataset("parquet", data_files=STUDENTS_FEEDBACK_PARQUET_FILES, cache_dir=cache_dir)
 
 
 def compute_macro_f1(predictions: np.ndarray, labels: np.ndarray, num_labels: int) -> float:
@@ -134,7 +162,7 @@ def main():
 
     set_seed(training_args.seed)
 
-    raw_datasets = load_dataset(model_args.dataset_name, cache_dir=model_args.cache_dir)
+    raw_datasets = load_students_feedback_dataset(model_args.dataset_name, model_args.cache_dir)
     for split, dataset in raw_datasets.items():
         missing_columns = [
             column

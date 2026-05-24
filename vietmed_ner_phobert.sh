@@ -9,18 +9,20 @@ run(){
   seed=42
   learning_rate=1e-4
   num_train_epochs=40
-  max_train_samples=2000
+  max_train_samples=200000
   batch_size=64
   lora_alpha=16
   lora_dropout=0.05
   target_modules="query value"
   prediction_details_file="test_predictions_full.jsonl"
   wandb_project=project_name
-  wandb_run_name=phobert-base-vietmed-ner-${mode}-r-${rank}-n-${l_num}-alpha-${lora_alpha}-seed-${seed}-bs-${batch_size}-lr-${learning_rate}-epochs-${num_train_epochs}-train-${max_train_samples}
-  exp_dir=./phobert-base-vietmed-ner/${wandb_run_name}
+  model_name_or_path=vinai/phobert-large
+  model_short_name=phobert-large
+  wandb_run_name=${model_short_name}-vietmed-ner-${mode}-r-${rank}-n-${l_num}-alpha-${lora_alpha}-seed-${seed}-bs-${batch_size}-lr-${learning_rate}-epochs-${num_train_epochs}-train-${max_train_samples}
+  exp_dir=./${model_short_name}-vietmed-ner/${wandb_run_name}
 
   python ./run_vietmed_ner_phobert.py \
-  --model_name_or_path vinai/phobert-base \
+  --model_name_or_path ${model_name_or_path} \
   --dataset_name leduckhai/VietMed-NER \
   --output_dir ${exp_dir}/model \
   --do_train \

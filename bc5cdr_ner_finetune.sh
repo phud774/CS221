@@ -15,7 +15,7 @@ run(){
   lora_dropout=0.05
   lora_bias=none
   max_seq_length=256
-  max_train_samples=1000
+  max_train_samples=5000
   wandb_project=project_name
   wandb_run_name=roberta-lora-${mode}-bc5cdr-ner-r-${rank}-n-${l_num}-alpha-${lora_alpha}-seed-${seed}-bs-${per_device_train_batch_size}-lr-${learning_rate}-epochs-${num_train_epochs}-train-${max_train_samples}
 

@@ -61,7 +61,7 @@ run(){
   --run_name ${wandb_run_name} \
   --overwrite_output_dir
 }
-task_base=('STS-B')
+task_base=('stsb' 'cola')
 
 for task in "${task_base[@]}"; do
     run $task "8" "1" "base"

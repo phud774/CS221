@@ -7,7 +7,7 @@ run(){
   rank=$2
   l_num=$3
   seed=42
-  learning_rate=1e-4
+  learning_rate=4e-4
   num_train_epochs=40
   max_train_samples=200000
   batch_size=64

@@ -28,6 +28,7 @@ from transformers.trainer_utils import get_last_checkpoint
 logger = logging.getLogger(__name__)
 
 BC5CDR_LABELS = ["O", "B-Chemical", "B-Disease", "I-Disease", "I-Chemical"]
+BC5CDR_DATA_URL = "https://huggingface.co/datasets/tner/bc5cdr/raw/main/dataset"
 
 
 @dataclass
@@ -75,6 +76,26 @@ def get_label_list(raw_datasets: DatasetDict, tags_column_name: str) -> List[str
     if unique_ids == set(range(len(BC5CDR_LABELS))):
         return BC5CDR_LABELS
     return [str(index) for index in sorted(unique_ids)]
+
+
+def load_bc5cdr_dataset(dataset_name: str, cache_dir: Optional[str]) -> DatasetDict:
+    try:
+        return load_dataset(dataset_name, cache_dir=cache_dir)
+    except RuntimeError as exc:
+        message = str(exc)
+        if dataset_name != "tner/bc5cdr" or "Dataset scripts are no longer supported" not in message:
+            raise
+
+        logger.warning(
+            "Falling back to direct JSONL files for %s because its dataset script is no longer supported.",
+            dataset_name,
+        )
+        data_files = {
+            "train": f"{BC5CDR_DATA_URL}/train.json",
+            "validation": f"{BC5CDR_DATA_URL}/valid.json",
+            "test": f"{BC5CDR_DATA_URL}/test.json",
+        }
+        return load_dataset("json", data_files=data_files, cache_dir=cache_dir)
 
 
 def b_to_i(label_id: int, label_list: List[str]) -> int:
@@ -179,7 +200,7 @@ def main():
 
     set_seed(training_args.seed)
 
-    raw_datasets = load_dataset(model_args.dataset_name, cache_dir=model_args.cache_dir)
+    raw_datasets = load_bc5cdr_dataset(model_args.dataset_name, model_args.cache_dir)
     for split, dataset in raw_datasets.items():
         missing_columns = [
             column

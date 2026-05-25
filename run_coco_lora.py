@@ -5,12 +5,15 @@
 import json
 import logging
 import os
+import csv
 import sys
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 import numpy as np
-from datasets import DatasetDict, load_dataset
+from datasets import Dataset, DatasetDict, load_dataset
+from datasets.exceptions import DataFilesNotFoundError
+from huggingface_hub import hf_hub_download
 from peft import LoraConfig, get_peft_model
 from transformers import (
     AutoConfig,
@@ -59,12 +62,21 @@ DEFAULT_POSITIVE_LABEL_VALUES = {
     "promotes",
     "promoting",
 }
+COCO_EXPORT_FILE = "COCO_export"
 
 
 @dataclass
 class ModelArguments:
     model_name_or_path: str = field(default="FacebookAI/roberta-base", metadata={"help": "Model name or path."})
     dataset_name: str = field(default="Jlangguth/COCO", metadata={"help": "Hugging Face dataset name."})
+    data_files: Optional[str] = field(
+        default=None,
+        metadata={"help": "Optional local or remote data files. Use this when the COCO file is uploaded manually."},
+    )
+    data_file_format: str = field(
+        default="auto",
+        metadata={"help": "Data file format for --data_files: auto, csv, json, or parquet."},
+    )
     text_column_name: str = field(
         default="auto",
         metadata={"help": "Input text column name, or 'auto' to infer it."},
@@ -130,6 +142,75 @@ def prepare_splits(raw_datasets: DatasetDict, seed: int, validation_ratio: float
             "test": second_split["test"],
         }
     )
+
+
+def sniff_csv_delimiter(path: str) -> str:
+    with open(path, "r", encoding="utf-8", errors="replace", newline="") as reader:
+        sample = reader.read(4096)
+    try:
+        return csv.Sniffer().sniff(sample, delimiters=",\t;|").delimiter
+    except csv.Error:
+        return "\t" if "\t" in sample else ","
+
+
+def dataset_from_tabular_file(path: str, data_file_format: str) -> DatasetDict:
+    suffix = os.path.splitext(path)[1].lower().lstrip(".")
+    file_format = suffix if data_file_format == "auto" and suffix else data_file_format
+
+    if file_format == "auto":
+        delimiter = sniff_csv_delimiter(path)
+        return load_pandas_dataset(path, delimiter)
+    if file_format == "csv":
+        delimiter = sniff_csv_delimiter(path)
+        return load_pandas_dataset(path, delimiter)
+    if file_format in {"json", "jsonl"}:
+        return load_dataset("json", data_files={"train": path})
+    if file_format == "parquet":
+        return load_dataset("parquet", data_files={"train": path})
+    raise ValueError(f"Unsupported data_file_format '{data_file_format}'. Use auto, csv, json, or parquet.")
+
+
+def load_pandas_dataset(path: str, delimiter: str) -> DatasetDict:
+    try:
+        import pandas as pd
+    except ImportError as exc:
+        raise ImportError("Loading COCO_export requires pandas because the file has no standard extension.") from exc
+
+    frame = pd.read_csv(path, sep=delimiter)
+    return DatasetDict({"train": Dataset.from_pandas(frame, preserve_index=False)})
+
+
+def load_coco_dataset(model_args: ModelArguments) -> DatasetDict:
+    if model_args.data_files:
+        return dataset_from_tabular_file(model_args.data_files, model_args.data_file_format)
+
+    try:
+        return load_dataset(model_args.dataset_name, cache_dir=model_args.cache_dir)
+    except DataFilesNotFoundError as exc:
+        if model_args.dataset_name != "Jlangguth/COCO":
+            raise
+
+        logger.warning(
+            "Dataset %s stores data as gated extensionless files, so datasets cannot infer a loader. "
+            "Downloading %s directly.",
+            model_args.dataset_name,
+            COCO_EXPORT_FILE,
+        )
+        try:
+            data_path = hf_hub_download(
+                repo_id=model_args.dataset_name,
+                filename=COCO_EXPORT_FILE,
+                repo_type="dataset",
+                cache_dir=model_args.cache_dir,
+            )
+        except Exception as download_error:
+            raise RuntimeError(
+                "Could not download Jlangguth/COCO/COCO_export. The COCO dataset is gated; "
+                "make sure your Hugging Face account has access and Kaggle is authenticated "
+                "with `huggingface-cli login` or HF_TOKEN. If you upload the file manually, pass "
+                "`--data_files /path/to/COCO_export --data_file_format csv`."
+            ) from download_error
+        return dataset_from_tabular_file(data_path, "csv")
 
 
 def infer_text_column(dataset, requested_column: str) -> str:
@@ -259,7 +340,7 @@ def main():
             )
 
     set_seed(training_args.seed)
-    raw_datasets = load_dataset(model_args.dataset_name, cache_dir=model_args.cache_dir)
+    raw_datasets = load_coco_dataset(model_args)
     raw_datasets = prepare_splits(raw_datasets, training_args.seed, model_args.validation_ratio, model_args.test_ratio)
 
     text_column_name = infer_text_column(raw_datasets["train"], model_args.text_column_name)

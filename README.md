@@ -148,15 +148,6 @@ Mỗi lần chạy tạo một thư mục riêng theo `run_name`. Thư mục nà
 
 Metric chính của các demo NER/classification là **F1**. GLUE dùng metric riêng theo task, ví dụ `pearson` cho STS-B và `matthews_correlation` cho CoLA.
 
-## Ghi chú cho demo CS221
-
-Kịch bản demo nên tập trung vào:
-
-1. Giới thiệu bài toán parameter-efficient fine-tuning: pretrained model được đóng băng, chỉ adapter được train.
-2. So sánh LoRA baseline với MELoRA qua hai cấu hình trong script: `base` và `me`.
-3. Chạy một script NER tiêu biểu, ưu tiên `vietmed_ner_phobert.sh` hoặc `bc5cdr_ner_finetune.sh`.
-4. Trình bày output: F1, checkpoint, file dự đoán chi tiết `test_predictions_full.jsonl`.
-5. Liên hệ với paper MELoRA: mini-ensemble giúp tăng đa dạng adapter trong khi vẫn tiết kiệm tham số.
 
 ## Thanks
 

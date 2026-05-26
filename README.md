@@ -110,7 +110,7 @@ Trước khi chạy, có thể sửa trực tiếp trong file `.sh`:
 
 - `model_name_or_path`: đổi model Hugging Face hoặc đường dẫn model local.
 - `dataset_name`: đổi dataset Hugging Face.
-- `max_train_samples`: giới hạn số mẫu train để chạy demo nhanh hơn.
+- `max_train_samples`: giới hạn số mẫu train để thử nghiệm với số mẫu ít.
 - `num_train_epochs`, `learning_rate`, `batch_size`: cấu hình huấn luyện.
 - `rank`: rank của LoRA hoặc rank của từng mini-LoRA.
 - `l_num`: số lượng mini-LoRA khi dùng MELoRA.

@@ -2,11 +2,6 @@
 
 Đây là mã nguồn demo môn học **CS221.Q21.KHTN** cho bài toán fine-tuning hiệu quả tham số bằng **LoRA** và **MELoRA** trên các tác vụ NLP, đặc biệt là NER/token classification.
 
-Repo được xây dựng dựa trên paper tham khảo:
-
-> **Mini-Ensemble Low-Rank Adapters for Parameter-Efficient Fine-Tuning**  
-> Pengjie Ren, Chengshun Shi, Shiguang Wu, Mengqi Zhang, Zhaochun Ren, Maarten de Rijke, Zhumin Chen, Jiahuan Pei.  
-> arXiv:2402.17263, 2024.
 
 MELoRA là phương pháp mở rộng LoRA bằng cách đóng băng trọng số của pretrained model và huấn luyện một nhóm mini-LoRA. Thay vì chỉ dùng một adapter low-rank, MELoRA dùng nhiều adapter nhỏ để tạo tính đa dạng trong ensemble, qua đó kỳ vọng cải thiện khả năng tổng quát hóa trong khi vẫn giữ số tham số huấn luyện ở mức thấp.
 

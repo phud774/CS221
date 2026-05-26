@@ -162,10 +162,27 @@ Code được phát triển dựa trên:
 Nếu sử dụng method/code này, vui lòng cite:
 
 ```bibtex
-@article{melora,
-  title={Mini-Ensemble Low-Rank Adapters for Parameter-Efficient Fine-Tuning},
-  author={Ren, Pengjie and Shi, Chengshun and Wu, Shiguang and Zhang, Mengqi and Ren, Zhaochun and de Rijke, Maarten and Chen, Zhumin and Pei, Jiahuan},
-  journal={arXiv preprint arXiv:2402.17263},
-  year={2024}
+@inproceedings{ren-etal-2024-melora,
+    title = "{MEL}o{RA}: Mini-Ensemble Low-Rank Adapters for Parameter-Efficient Fine-Tuning",
+    author = "Ren, Pengjie  and
+      Shi, Chengshun  and
+      Wu, Shiguang  and
+      Zhang, Mengqi  and
+      Ren, Zhaochun  and
+      de Rijke, Maarten  and
+      Chen, Zhumin  and
+      Pei, Jiahuan",
+    editor = "Ku, Lun-Wei  and
+      Martins, Andre  and
+      Srikumar, Vivek",
+    booktitle = "Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)",
+    month = aug,
+    year = "2024",
+    address = "Bangkok, Thailand",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2024.acl-long.168/",
+    doi = "10.18653/v1/2024.acl-long.168",
+    pages = "3052--3064",
+    abstract = "Parameter-efficient fine-tuning (PEFT) is a popular method for tailoring pre-trained large language models (LLMs), especially as the models' scale and the diversity of tasks increase. Low-rank adaptation (LoRA) is based on the idea that the adaptation process is intrinsically low-dimensional, i.e., significant model changes can be represented with relatively few parameters. However, decreasing the rank encounters challenges with generalization errors for specific tasks when compared to full-parameter fine-tuning. We present MELoRA, a mini-ensemble low-rank adapters that uses fewer trainable parameters while maintaining a higher rank, thereby offering improved performance potential.The core idea is to freeze original pretrained weights and train a group of mini LoRAs with only a small number of parameters. This can capture a significant degree of diversity among mini LoRAs, thus promoting better generalization ability. We conduct a theoretical analysis and empirical studies on various NLP tasks. Our experimental results show that, compared to LoRA, MELoRA achieves better performance with 8 times fewer trainable parameters on natural language understanding tasks and 36 times fewer trainable parameters on instruction following tasks, which demonstrates the effectiveness of MELoRA."
 }
 ```

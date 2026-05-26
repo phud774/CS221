@@ -61,7 +61,6 @@ Script trên sẽ chạy lần lượt LoRA baseline và MELoRA cho VietMed-NER.
 
 ```text
 ./phobert-large-vietmed-ner/<run_name>/model
-./phobert-large-vietmed-ner/<run_name>/model/test_predictions_full.jsonl
 ```
 
 ## Danh sách script thí nghiệm
